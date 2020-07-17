@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	dbinterface "github.com/Typelias/DnDBackend/DBInterface"
 	dndinterface "github.com/Typelias/DnDBackend/DBInterface"
 
 	"github.com/dgrijalva/jwt-go"
@@ -188,6 +189,35 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func addCampaign(w http.ResponseWriter, r *http.Request) {
+	var postData dbinterface.Campain
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	res := db.AddCampain(postData)
+	if res {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func getAllCampaigns(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(db.GetAllCampains())
+}
+
+func getUserCampaigns(w http.ResponseWriter, r *http.Request) {
+	var user string
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	json.NewEncoder(w).Encode(db.GetUserCampaign(user))
+}
+
 func main() {
 	db.Init()
 
@@ -202,6 +232,9 @@ func main() {
 	router.Handle("/getUserList", isAuthorized(getUserList)).Methods("GET")
 	router.Handle("/deleteUser", isAuthorized(deleteUser)).Methods("POST", "OPTIONS")
 	router.Handle("/updateUser", isAuthorized(updateUser)).Methods("POST", "OPTIONS")
+	router.Handle("/addCampaign", isAuthorized(addCampaign)).Methods("POST", "OPTIONS")
+	router.Handle("/getUserCampaign", isAuthorized(getUserCampaigns)).Methods("POST", "OPTIONS")
+	router.Handle("/getAllCampaigns", isAuthorized(getAllCampaigns)).Methods("GET")
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
