@@ -208,14 +208,18 @@ func getAllCampaigns(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(db.GetAllCampains())
 }
 
+type userCampaignGet struct {
+	User string `json:"username"`
+}
+
 func getUserCampaigns(w http.ResponseWriter, r *http.Request) {
-	var user string
+	var user userCampaignGet
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	json.NewEncoder(w).Encode(db.GetUserCampaign(user))
+	json.NewEncoder(w).Encode(db.GetUserCampaign(user.User))
 }
 
 func main() {
