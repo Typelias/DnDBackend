@@ -18,12 +18,43 @@ type User struct {
 	UserRole string
 }
 
-//Campain is used to handle operation on campain collection
-type Campain struct {
+//Character struct describes a DnD character
+type Character struct {
+	characterName                  string
+	characterClass                 string
+	level                          int
+	exp                            int
+	background                     string
+	race                           string
+	alignment                      string
+	playerName                     string
+	expPoints                      int
+	inspiration                    bool
+	proficiencyBonus               int
+	savingThrows                   interface{}
+	skills                         interface{}
+	hp                             interface{}
+	personality                    interface{}
+	attacksAndSpellcasting         interface{}
+	passiveInvestigation           int
+	passivePerception              int
+	passiveInsight                 int
+	otherProficienciesAndLanguages interface{}
+	equipment                      interface{}
+	featuresAndTraits              interface{}
+	spellcastingAbility            string
+	spellSaveDC                    int
+	spellAttackBonus               int
+	spellList                      interface{}
+	classAttributes                []string
+}
+
+//Campaign is used to handle operation on campain collection
+type Campaign struct {
 	Name       string
 	DM         string
 	Players    []string
-	Characters []interface{}
+	Characters []string
 	Image      string
 }
 
@@ -51,9 +82,71 @@ func (db *DBInterface) Init() {
 	db.campains = client.Database("DnDDB").Collection("campains")
 }
 
-//AddCampain adds new campains to the database
-func (db *DBInterface) AddCampain(campain Campain) bool {
+// AddCharacter adds Character to the database and adds it to a campaign
+func (db *DBInterface) AddCharacter(campaignName string, character Character) bool {
+	insRes, err := db.characters.InsertOne(context.TODO(), character)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Println("Inserted a Character: ", insRes.InsertedID)
 
+	filter := bson.D{{"name", campaignName}}
+
+	var camp Campaign
+
+	db.campains.FindOne(context.TODO(), filter).Decode(&camp)
+
+	camp.Characters = append(camp.Characters, insRes.InsertedID.(string))
+
+	db.campains.ReplaceOne(context.TODO(), bson.M{"name": campaignName}, camp)
+	return true
+
+}
+
+//GetCharacterByID gets a character based on an ID
+func (db *DBInterface) GetCharacterByID(id string) (Character, bool) {
+	filter := bson.D{{"_id", id}}
+	var res Character
+	err := db.users.FindOne(context.TODO(), filter).Decode(&res)
+
+	if err != nil {
+		fmt.Println(err)
+		return Character{}, false
+	}
+
+	return res, true
+}
+
+//UpdateCharacter updates a character given an ID
+func (db *DBInterface) UpdateCharacter(id string, ch Character) bool {
+	filter := bson.D{{"_id", id}}
+	res, err := db.characters.ReplaceOne(context.TODO(), filter, ch)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	fmt.Println(res)
+	return true
+}
+
+//RemoveCharacter removes a character based on ID
+func (db *DBInterface) RemoveCharacter(id string) bool {
+	filter := bson.D{{"_id", id}}
+	res, err := db.characters.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	fmt.Println(res)
+
+	return true
+}
+
+//AddCampain adds new campains to the database
+func (db *DBInterface) AddCampain(campain Campaign) bool {
 	if !db.findCampain(campain.Name) {
 		insRes, err := db.campains.InsertOne(context.TODO(), campain)
 		if err != nil {
@@ -68,21 +161,88 @@ func (db *DBInterface) AddCampain(campain Campain) bool {
 	return false
 }
 
+//UpdateCampaign is used to update a campaign
+func (db *DBInterface) UpdateCampaign(name string, campaignToUpdate Campaign) bool {
+
+	filter := bson.D{{"name", name}}
+
+	var oldeVersion Campaign
+
+	db.campains.FindOne(context.TODO(), filter).Decode(&oldeVersion)
+
+	campaignToUpdate.Characters = oldeVersion.Characters
+
+	result, err := db.campains.ReplaceOne(context.TODO(), bson.M{"name": name}, campaignToUpdate)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Println(result)
+
+	return true
+}
+
+//RemoveCampaign removes a Campaign based on username
+func (db *DBInterface) RemoveCampaign(name string) bool {
+	filter := bson.D{{"name", name}}
+
+	var oldeVersion Campaign
+
+	db.campains.FindOne(context.TODO(), filter).Decode(&oldeVersion)
+
+	list := oldeVersion.Characters
+
+	for _, v := range list {
+		db.RemoveCharacter(v)
+	}
+
+	result, err := db.users.DeleteOne(context.TODO(), bson.M{"name": name})
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	fmt.Println(result)
+	return true
+}
+
 //GetUserCampaign gets specific user campaigns
-func (db *DBInterface) GetUserCampaign(username string) []Campain {
-	var results []Campain
+func (db *DBInterface) GetUserCampaign(username string) []Campaign {
+	var results []Campaign
 	cur, err := db.campains.Find(context.TODO(), bson.D{{}}, options.Find())
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for cur.Next(context.TODO()) {
-		var elem Campain
+		var elem Campaign
 		err := cur.Decode(&elem)
 		if err != nil {
 			fmt.Println(err)
 		}
 		if checkForUser(username, elem.Players) {
+			results = append(results, elem)
+
+		}
+	}
+
+	return results
+}
+
+//GetDMCampaign gets specific campaigns for a specific DM
+func (db *DBInterface) GetDMCampaign(username string) []Campaign {
+	var results []Campaign
+	cur, err := db.campains.Find(context.TODO(), bson.D{{}}, options.Find())
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for cur.Next(context.TODO()) {
+		var elem Campaign
+		err := cur.Decode(&elem)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if username == elem.DM {
 			results = append(results, elem)
 
 		}
@@ -104,15 +264,15 @@ func checkForUser(username string, list []string) bool {
 }
 
 //GetAllCampains gets alla campains
-func (db *DBInterface) GetAllCampains() []Campain {
-	var results []Campain
+func (db *DBInterface) GetAllCampains() []Campaign {
+	var results []Campaign
 	cur, err := db.campains.Find(context.TODO(), bson.D{{}}, options.Find())
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	for cur.Next(context.TODO()) {
-		var elem Campain
+		var elem Campaign
 		err := cur.Decode(&elem)
 		if err != nil {
 			fmt.Println(err)

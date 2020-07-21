@@ -190,7 +190,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func addCampaign(w http.ResponseWriter, r *http.Request) {
-	var postData dbinterface.Campain
+	var postData dbinterface.Campaign
 	err := json.NewDecoder(r.Body).Decode(&postData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -222,12 +222,78 @@ func getUserCampaigns(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(db.GetUserCampaign(user.User))
 }
 
+func getDMCampaigns(w http.ResponseWriter, r *http.Request) {
+	var user userCampaignGet
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	json.NewEncoder(w).Encode(db.GetDMCampaign(user.User))
+}
+
+type campaignRemoveGet struct {
+	Name string `json:"name"`
+}
+
+func removeCampaign(w http.ResponseWriter, r *http.Request) {
+	var name campaignRemoveGet
+	err := json.NewDecoder(r.Body).Decode(&name)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	res := db.RemoveCampaign(name.Name)
+	if res {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+type camapaignUpdatePost struct {
+	NameOfCampaign string               `json:"name"`
+	Campaign       dbinterface.Campaign `json:"campaign"`
+}
+
+func updateCampaign(w http.ResponseWriter, r *http.Request) {
+	var postData camapaignUpdatePost
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	res := db.UpdateCampaign(postData.NameOfCampaign, postData.Campaign)
+
+	if res {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+type characterAddPost struct {
+	NameOfCampaign string                `json:"name"`
+	Character      dbinterface.Character `json:"character"`
+}
+
+func addCharacter(w http.ResponseWriter, r *http.Request) {
+	var postData characterAddPost
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	res := db.AddCharacter(postData.NameOfCampaign, postData.Character)
+	if res {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
 func main() {
 	db.Init()
-
-	temp := db.GetAllUsers()
-
-	fmt.Println(temp)
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -238,7 +304,11 @@ func main() {
 	router.Handle("/updateUser", isAuthorized(updateUser)).Methods("POST", "OPTIONS")
 	router.Handle("/addCampaign", isAuthorized(addCampaign)).Methods("POST", "OPTIONS")
 	router.Handle("/getUserCampaign", isAuthorized(getUserCampaigns)).Methods("POST", "OPTIONS")
+	router.Handle("/getDMCampaign", isAuthorized(getDMCampaigns)).Methods("POST", "OPTIONS")
 	router.Handle("/getAllCampaigns", isAuthorized(getAllCampaigns)).Methods("GET")
+	router.Handle("/deleteCampaign", isAuthorized(removeCampaign)).Methods("POST", "OPTIONS")
+	router.Handle("/updateCampaign", isAuthorized(updateCampaign)).Methods("POST", "OPTIONS")
+	router.Handle("/addCharacter", isAuthorized(addCharacter)).Methods("POST", "OPTIONS")
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
