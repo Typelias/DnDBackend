@@ -273,8 +273,8 @@ func updateCampaign(w http.ResponseWriter, r *http.Request) {
 }
 
 type characterAddPost struct {
-	NameOfCampaign string                `json:"name"`
-	Character      dbinterface.Character `json:"character"`
+	NameOfCampaign string      `json:"name"`
+	Character      interface{} `json:"character"`
 }
 
 func addCharacter(w http.ResponseWriter, r *http.Request) {
@@ -289,6 +289,44 @@ func addCharacter(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
+type characterUpdatePost struct {
+	ID        string      `json:"id"`
+	Character interface{} `json:"character"`
+}
+
+func updateCharacter(w http.ResponseWriter, r *http.Request) {
+	var postData characterUpdatePost
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	res := db.UpdateCharacter(postData.ID, postData.Character)
+	if res {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+type characterGetPost struct {
+	ID string `json:id`
+}
+
+func getCharacter(w http.ResponseWriter, r *http.Request) {
+	var postData characterGetPost
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	ch, res := db.GetCharacterByID(postData.ID)
+	if res {
+		json.NewEncoder(w).Encode(ch)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
 
@@ -309,6 +347,8 @@ func main() {
 	router.Handle("/deleteCampaign", isAuthorized(removeCampaign)).Methods("POST", "OPTIONS")
 	router.Handle("/updateCampaign", isAuthorized(updateCampaign)).Methods("POST", "OPTIONS")
 	router.Handle("/addCharacter", isAuthorized(addCharacter)).Methods("POST", "OPTIONS")
+	router.Handle("/updateCharacter", isAuthorized(updateCharacter)).Methods("POST", "OPTIONS")
+	router.Handle("/getCharacter", isAuthorized(getCharacter)).Methods("POST", "OPTIONS")
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})

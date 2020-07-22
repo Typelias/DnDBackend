@@ -83,7 +83,7 @@ func (db *DBInterface) Init() {
 }
 
 // AddCharacter adds Character to the database and adds it to a campaign
-func (db *DBInterface) AddCharacter(campaignName string, character Character) bool {
+func (db *DBInterface) AddCharacter(campaignName string, character interface{}) bool {
 	insRes, err := db.characters.InsertOne(context.TODO(), character)
 	if err != nil {
 		fmt.Println(err)
@@ -119,7 +119,7 @@ func (db *DBInterface) GetCharacterByID(id string) (Character, bool) {
 }
 
 //UpdateCharacter updates a character given an ID
-func (db *DBInterface) UpdateCharacter(id string, ch Character) bool {
+func (db *DBInterface) UpdateCharacter(id string, ch interface{}) bool {
 	filter := bson.D{{"_id", id}}
 	res, err := db.characters.ReplaceOne(context.TODO(), filter, ch)
 	if err != nil {
@@ -196,7 +196,7 @@ func (db *DBInterface) RemoveCampaign(name string) bool {
 		db.RemoveCharacter(v)
 	}
 
-	result, err := db.users.DeleteOne(context.TODO(), bson.M{"name": name})
+	result, err := db.campains.DeleteOne(context.TODO(), bson.M{"name": name})
 	if err != nil {
 		fmt.Println(err)
 		return false
