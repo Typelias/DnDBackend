@@ -232,6 +232,20 @@ func getDMCampaigns(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(db.GetDMCampaign(user.User))
 }
 
+type campaignNameGet struct {
+	Name string `json:"name"`
+}
+
+func getCampaignByName(w http.ResponseWriter, r *http.Request) {
+	var postData campaignNameGet
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	json.NewEncoder(w).Encode(db.GetCampaignByName(postData.Name))
+}
+
 type campaignRemoveGet struct {
 	Name string `json:"name"`
 }
@@ -313,7 +327,7 @@ func updateCharacter(w http.ResponseWriter, r *http.Request) {
 }
 
 type characterGetPost struct {
-	ID string `json:id`
+	ID string `json:"id"`
 }
 
 func getCharacter(w http.ResponseWriter, r *http.Request) {
@@ -328,6 +342,21 @@ func getCharacter(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+type multiCharacterGetPost struct {
+	IDs []string `json:"ids"`
+}
+
+func getMultiCharacter(w http.ResponseWriter, r *http.Request) {
+	var postData multiCharacterGetPost
+	err := json.NewDecoder(r.Body).Decode(&postData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	json.NewEncoder(w).Encode(db.GetMultiCharacter(postData.IDs))
+
 }
 
 func main() {
@@ -346,9 +375,11 @@ func main() {
 	router.Handle("/getAllCampaigns", isAuthorized(getAllCampaigns)).Methods("GET")
 	router.Handle("/deleteCampaign", isAuthorized(removeCampaign)).Methods("POST", "OPTIONS")
 	router.Handle("/updateCampaign", isAuthorized(updateCampaign)).Methods("POST", "OPTIONS")
+	router.Handle("/getCampaignByName", isAuthorized(getCampaignByName)).Methods("POST", "OPTIONS")
 	router.Handle("/addCharacter", isAuthorized(addCharacter)).Methods("POST", "OPTIONS")
 	router.Handle("/updateCharacter", isAuthorized(updateCharacter)).Methods("POST", "OPTIONS")
 	router.Handle("/getCharacter", isAuthorized(getCharacter)).Methods("POST", "OPTIONS")
+	router.Handle("/getMultiCharacter", isAuthorized(getMultiCharacter)).Methods("POST", "OPTIONS")
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})

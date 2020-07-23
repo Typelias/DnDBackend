@@ -105,17 +105,31 @@ func (db *DBInterface) AddCharacter(campaignName string, character interface{}) 
 }
 
 //GetCharacterByID gets a character based on an ID
-func (db *DBInterface) GetCharacterByID(id string) (Character, bool) {
+func (db *DBInterface) GetCharacterByID(id string) (interface{}, bool) {
 	filter := bson.D{{"_id", id}}
-	var res Character
+	var res interface{}
 	err := db.users.FindOne(context.TODO(), filter).Decode(&res)
 
 	if err != nil {
 		fmt.Println(err)
-		return Character{}, false
+		return nil, false
 	}
 
 	return res, true
+}
+
+//GetMultiCharacter gets alla the character by string array of character id:s
+func (db *DBInterface) GetMultiCharacter(ids []string) map[string]interface{} {
+	var ret map[string]interface{}
+	for _, v := range ids {
+		ch, found := db.GetCharacterByID(v)
+		if found {
+			ret[v] = ch
+
+		}
+	}
+
+	return ret
 }
 
 //UpdateCharacter updates a character given an ID
@@ -281,6 +295,16 @@ func (db *DBInterface) GetAllCampains() []Campaign {
 	}
 
 	return results
+}
+
+//GetCampaignByName gets a campaign based on its name
+func (db *DBInterface) GetCampaignByName(name string) Campaign {
+	filter := bson.D{{"name", name}}
+	var camp Campaign
+	db.campains.FindOne(context.TODO(), filter).Decode(&camp)
+
+	return camp
+
 }
 
 func (db *DBInterface) findCampain(name string) bool {
