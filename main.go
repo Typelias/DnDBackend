@@ -76,7 +76,7 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(tokenString)
+	// fmt.Println(tokenString)
 
 	http.SetCookie(w, &http.Cookie{
 		Name:    "token",
@@ -287,8 +287,8 @@ func updateCampaign(w http.ResponseWriter, r *http.Request) {
 }
 
 type characterAddPost struct {
-	NameOfCampaign string      `json:"name"`
-	Character      interface{} `json:"character"`
+	NameOfCampaign string                `json:"name"`
+	Character      dbinterface.Character `json:"character"`
 }
 
 func addCharacter(w http.ResponseWriter, r *http.Request) {
@@ -297,6 +297,8 @@ func addCharacter(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	}
+
+	fmt.Println(postData.Character)
 
 	res := db.AddCharacter(postData.NameOfCampaign, postData.Character)
 	if res {
@@ -307,8 +309,8 @@ func addCharacter(w http.ResponseWriter, r *http.Request) {
 }
 
 type characterUpdatePost struct {
-	ID        string      `json:"id"`
-	Character interface{} `json:"character"`
+	ID        string                `json:"id"`
+	Character dbinterface.Character `json:"character"`
 }
 
 func updateCharacter(w http.ResponseWriter, r *http.Request) {
@@ -383,7 +385,7 @@ func main() {
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"http://localhost:4200"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.30.225.114:4200"})
 	x := handlers.ExposedHeaders([]string{"Set-Cookie"})
 	cred := handlers.AllowCredentials()
 

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -18,35 +21,215 @@ type User struct {
 	UserRole string
 }
 
+//Stats is a subclass of character
+type Stats struct {
+	Strength             int `json:"strength"`
+	StrengthModifier     int `json:"strengthModifier"`
+	Dexterity            int `json:"dexterity"`
+	DexterityModifier    int `json:"dexterityModifier"`
+	Constitution         int `json:"constitution"`
+	ConstitutionModifier int `json:"constitutionModifier"`
+	Intelligence         int `json:"intelligence"`
+	IntelligenceModifier int `json:"intelligenceModifier"`
+	Wisdom               int `json:"wisdom"`
+	WisdomModifier       int `json:"wisdomModifier"`
+	Charisma             int `json:"charisma"`
+	CharismaModifier     int `json:"charismaModifier"`
+}
+
+//SavingThrows is a subclass of character
+type SavingThrows struct {
+	Strength     bool `json:"strength"`
+	Dexterity    bool `json:"dexterity"`
+	Constitution bool `json:"constitution"`
+	Intelligence bool `json:"intelligence"`
+	Wisdom       bool `json:"wisdom"`
+	Charisma     bool `json:"charisma"`
+}
+
+//Skills is a subclass of character
+type Skills struct {
+	Acrobatics          bool `json:"acrobatics"`
+	AcrobaticsBonus     int  `json:"acrobaticsBonus"`
+	AnimalHandling      bool `json:"animalHandling"`
+	AnimalHandlingBonus int  `json:"animalHandlingBonus"`
+	Arcana              bool `json:"arcana"`
+	ArcanaBonus         int  `json:"arcanaBonus"`
+	Athletics           bool `json:"athletics"`
+	AthleticsBonus      int  `json:"athleticsBonus"`
+	Deception           bool `json:"deception"`
+	DeceptionBonus      int  `json:"deceptionBonus"`
+	History             bool `json:"history"`
+	HistoryBonus        int  `json:"historyBonus"`
+	Insight             bool `json:"insight"`
+	InsightBonus        int  `json:"insightBonus"`
+	Intimidation        bool `json:"intimidation"`
+	IntimidationBonus   int  `json:"intimidationBonus"`
+	Investigation       bool `json:"investigation"`
+	InvestigationBonus  int  `json:"investigationBonus"`
+	Medicine            bool `json:"medicine"`
+	MedicineBonus       int  `json:"medicineBonus"`
+	Nature              bool `json:"nature"`
+	NatureBonus         int  `json:"natureBonus"`
+	Perception          bool `json:"perception"`
+	PerceptionBonus     int  `json:"perceptionBonus"`
+	Performance         bool `json:"performance"`
+	PerformanceBonus    int  `json:"performanceBonus"`
+	Persuasion          bool `json:"persuasion"`
+	PersuasionBonus     int  `json:"persuasionBonus"`
+	Religion            bool `json:"religion"`
+	ReligionBonus       int  `json:"religionBonus"`
+	SlightOfHand        bool `json:"slightOfHand"`
+	SlightOfHandBonus   int  `json:"slightOfHandBonus"`
+	Stealth             bool `json:"stealth"`
+	StealthBonus        int  `json:"stealthBonus"`
+	Survival            bool `json:"survival"`
+	SurvivalBonus       int  `json:"survivalBonus"`
+}
+
+//HP is a subclass of character
+type HP struct {
+	ArmorClass      int    `json:"armorClass"`
+	Initiative      int    `json:"initiative"`
+	Speed           int    `json:"speed"`
+	MaxHP           int    `json:"maxHP"`
+	CurrHP          int    `json:"currHP"`
+	TempHP          int    `json:"tempHP"`
+	HitDice         string `json:"hitDice"`
+	NumberOfHutDice int    `json:"numberOfHutDice"`
+}
+
+//Personality is a subclass of character
+type Personality struct {
+	PersonalityTraits string `json:"personalityTraits"`
+	Ideals            string `json:"ideals"`
+	Bonds             string `json:"bonds"`
+	Flaws             string `json:"flaws"`
+	Backstory         string `json:"backstory"`
+}
+
+//Weapon is a subclass of character
+type Weapon struct {
+	Name        string `json:"name"`
+	Damage      string `json:"damage"`
+	AtkBonus    string `json:"atkBonus"`
+	DamageType  string `json:"damageType"`
+	Description string `json:"description"`
+	Condition   string `json:"condition"`
+}
+
+//AttacksAndSpellcasting is a subclass of character
+type AttacksAndSpellcasting struct {
+	Weapons []Weapon `json:"weapons"`
+}
+
+//CategoryItem is a subclass of character
+type CategoryItem struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+//Category is a subclass of character
+type Category struct {
+	Name  string         `json:"name"`
+	Items []CategoryItem `json:"items"`
+}
+
+//OtherProficienciesAndLanguages is a subclass of character
+type OtherProficienciesAndLanguages struct {
+	Categories []Category `json:"categories"`
+}
+
+//Currency is a subclass of character
+type Currency struct {
+	Cp int `json:"cp"`
+	Sp int `json:"sp"`
+	Ep int `json:"ep"`
+	Gp int `json:"gp"`
+	Pp int `json:"PP"`
+}
+
+//Equipment is a subclass of character
+type Equipment struct {
+	EquipmentList []CategoryItem `json:"equipmentList"`
+	Currency      Currency       `json:"currency"`
+}
+
+//FeaturesAndTraits is a subclass of character
+type FeaturesAndTraits struct {
+	Categories []Category `json:"categories"`
+}
+
+//Spell is a subclass of character
+type Spell struct {
+	Name          string `json:"name"`
+	Description   string `json:"description"`
+	Dice          string `json:"dice"`
+	DamageType    string `json:"damageType"`
+	SpellRange    int    `json:"spellRange"`
+	Component     string `json:"component"`
+	Duration      string `json:"duration"`
+	CastingTime   string `json:"castingTime"`
+	Concentration bool   `json:"concentration"`
+	Conditions    string `json:"conditions"`
+}
+
+//Cantrips is a subclass of character
+type Cantrips struct {
+	SpellList []Spell `json:"spellList"`
+}
+
+//LevelSpells is a subclass of character
+type LevelSpells struct {
+	Spells            []Spell `json:"spells"`
+	SpellSlotTotal    int     `json:"spellSlotTotal"`
+	SpellSlotExpended int     `json:"spellSlotExpended"`
+}
+
+//SpellList is a subclass of character
+type SpellList struct {
+	Cantrips   Cantrips    `json:"cantrips"`
+	Lvl1Spells LevelSpells `json:"lvl1Spells"`
+	Lvl2Spells LevelSpells `json:"lvl2Spells"`
+	Lvl3Spells LevelSpells `json:"lvl3Spells"`
+	Lvl4Spells LevelSpells `json:"lvl4Spells"`
+	Lvl5Spells LevelSpells `json:"lvl5Spells"`
+	Lvl6Spells LevelSpells `json:"lvl6Spells"`
+	Lvl7Spells LevelSpells `json:"lvl7Spells"`
+	Lvl8Spells LevelSpells `json:"lvl8Spells"`
+	Lvl9Spells LevelSpells `json:"lvl9Spells"`
+}
+
 //Character struct describes a DnD character
 type Character struct {
-	characterName                  string
-	characterClass                 string
-	level                          int
-	exp                            int
-	background                     string
-	race                           string
-	alignment                      string
-	playerName                     string
-	expPoints                      int
-	inspiration                    bool
-	proficiencyBonus               int
-	savingThrows                   interface{}
-	skills                         interface{}
-	hp                             interface{}
-	personality                    interface{}
-	attacksAndSpellcasting         interface{}
-	passiveInvestigation           int
-	passivePerception              int
-	passiveInsight                 int
-	otherProficienciesAndLanguages interface{}
-	equipment                      interface{}
-	featuresAndTraits              interface{}
-	spellcastingAbility            string
-	spellSaveDC                    int
-	spellAttackBonus               int
-	spellList                      interface{}
-	classAttributes                []string
+	CharacterName                  string                         `json:"characterName"`
+	CharacterClass                 string                         `json:"characterClass"`
+	Level                          int                            `json:"level"`
+	Exp                            int                            `json:"exp"`
+	Background                     string                         `json:"background"`
+	Race                           string                         `json:"race"`
+	Alignment                      string                         `json:"alignment"`
+	PlayerName                     string                         `json:"playerName"`
+	ExpPoints                      int                            `json:"expPoints"`
+	Stats                          Stats                          `json:"stats"`
+	Inspiration                    bool                           `json:"inspiration"`
+	ProficiencyBonus               int                            `json:"proficiencyBonus"`
+	SavingThrows                   SavingThrows                   `json:"savingThrows"`
+	Skills                         Skills                         `json:"skills"`
+	Hp                             HP                             `json:"hp"`
+	Personality                    Personality                    `json:"personality"`
+	AttacksAndSpellcasting         AttacksAndSpellcasting         `json:"attacksAndSpellcasting"`
+	PassiveInvestigation           int                            `json:"passiveInvestigation"`
+	PassivePerception              int                            `json:"passivePerception"`
+	PassiveInsight                 int                            `json:"passiveInsight"`
+	OtherProficienciesAndLanguages OtherProficienciesAndLanguages `json:"otherProficienciesAndLanguages"`
+	Equipment                      Equipment                      `json:"equipment"`
+	FeaturesAndTraits              FeaturesAndTraits              `json:"featuresAndTraits"`
+	SpellcastingAbility            string                         `json:"spellcastingAbility"`
+	SpellSaveDC                    int                            `json:"spellSaveDC"`
+	SpellAttackBonus               int                            `json:"spellAttackBonus"`
+	SpellList                      SpellList                      `json:"spellList"`
+	ClassAttributes                []string                       `json:"classAttributes"`
 }
 
 //Campaign is used to handle operation on campain collection
@@ -80,10 +263,11 @@ func (db *DBInterface) Init() {
 
 	db.users = client.Database("DnDDB").Collection("users")
 	db.campains = client.Database("DnDDB").Collection("campains")
+	db.characters = client.Database("DnDDB").Collection("characters")
 }
 
 // AddCharacter adds Character to the database and adds it to a campaign
-func (db *DBInterface) AddCharacter(campaignName string, character interface{}) bool {
+func (db *DBInterface) AddCharacter(campaignName string, character Character) bool {
 	insRes, err := db.characters.InsertOne(context.TODO(), character)
 	if err != nil {
 		fmt.Println(err)
@@ -97,7 +281,9 @@ func (db *DBInterface) AddCharacter(campaignName string, character interface{}) 
 
 	db.campains.FindOne(context.TODO(), filter).Decode(&camp)
 
-	camp.Characters = append(camp.Characters, insRes.InsertedID.(string))
+	id := strings.Split(fmt.Sprintf("%v", insRes.InsertedID), "\"")[1]
+
+	camp.Characters = append(camp.Characters, id)
 
 	db.campains.ReplaceOne(context.TODO(), bson.M{"name": campaignName}, camp)
 	return true
@@ -105,26 +291,34 @@ func (db *DBInterface) AddCharacter(campaignName string, character interface{}) 
 }
 
 //GetCharacterByID gets a character based on an ID
-func (db *DBInterface) GetCharacterByID(id string) (interface{}, bool) {
-	filter := bson.D{{"_id", id}}
-	var res interface{}
-	err := db.users.FindOne(context.TODO(), filter).Decode(&res)
+func (db *DBInterface) GetCharacterByID(id string) (Character, bool) {
+
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{"_id": objID}
+	var res Character
+	err := db.characters.FindOne(context.TODO(), filter).Decode(&res)
 
 	if err != nil {
 		fmt.Println(err)
-		return nil, false
+		return Character{}, false
 	}
 
 	return res, true
 }
 
+//MultiCharacterGetReturn is a helper struct for returning mulitple characters
+type MultiCharacterGetReturn struct {
+	ID        string    `json:"id"`
+	Character Character `json:"character"`
+}
+
 //GetMultiCharacter gets alla the character by string array of character id:s
-func (db *DBInterface) GetMultiCharacter(ids []string) map[string]interface{} {
-	var ret map[string]interface{}
+func (db *DBInterface) GetMultiCharacter(ids []string) []MultiCharacterGetReturn {
+	var ret []MultiCharacterGetReturn
 	for _, v := range ids {
 		ch, found := db.GetCharacterByID(v)
 		if found {
-			ret[v] = ch
+			ret = append(ret, MultiCharacterGetReturn{ID: v, Character: ch})
 
 		}
 	}
@@ -133,7 +327,7 @@ func (db *DBInterface) GetMultiCharacter(ids []string) map[string]interface{} {
 }
 
 //UpdateCharacter updates a character given an ID
-func (db *DBInterface) UpdateCharacter(id string, ch interface{}) bool {
+func (db *DBInterface) UpdateCharacter(id string, ch Character) bool {
 	filter := bson.D{{"_id", id}}
 	res, err := db.characters.ReplaceOne(context.TODO(), filter, ch)
 	if err != nil {
