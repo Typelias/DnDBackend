@@ -127,6 +127,7 @@ type AttacksAndSpellcasting struct {
 type CategoryItem struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
+	Amount      int    `json:"amount"`
 }
 
 //Category is a subclass of character
@@ -328,7 +329,8 @@ func (db *DBInterface) GetMultiCharacter(ids []string) []MultiCharacterGetReturn
 
 //UpdateCharacter updates a character given an ID
 func (db *DBInterface) UpdateCharacter(id string, ch Character) bool {
-	filter := bson.D{{"_id", id}}
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{"_id": objID}
 	res, err := db.characters.ReplaceOne(context.TODO(), filter, ch)
 	if err != nil {
 		fmt.Println(err)
@@ -341,7 +343,8 @@ func (db *DBInterface) UpdateCharacter(id string, ch Character) bool {
 
 //RemoveCharacter removes a character based on ID
 func (db *DBInterface) RemoveCharacter(id string) bool {
-	filter := bson.D{{"_id", id}}
+	objID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{"_id": objID}
 	res, err := db.characters.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		fmt.Println(err)

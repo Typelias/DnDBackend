@@ -317,6 +317,8 @@ func updateCharacter(w http.ResponseWriter, r *http.Request) {
 	var postData characterUpdatePost
 	err := json.NewDecoder(r.Body).Decode(&postData)
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Wrong data")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
@@ -385,7 +387,7 @@ func main() {
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.30.225.114:4200"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.25.242.119:4200"})
 	x := handlers.ExposedHeaders([]string{"Set-Cookie"})
 	cred := handlers.AllowCredentials()
 
