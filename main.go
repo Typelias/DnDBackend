@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -83,6 +82,7 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 		Value:    tokenString,
 		Expires:  experationTime,
 		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	}
 
 	fmt.Println(cookie)
@@ -392,12 +392,14 @@ func main() {
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.25.240.76:4200"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.25.240.76:4200", "https://localhost:4200"})
 	x := handlers.ExposedHeaders([]string{"Set-Cookie"})
 	cred := handlers.AllowCredentials()
 
 	fmt.Println("Server started")
 
-	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(headers, methods, origins, x, cred)(router)))
+	http.ListenAndServeTLS(":8081", "./server.crt", "./server.key", handlers.CORS(headers, methods, origins, x, cred)(router))
+
+	//log.Fatal(http.ListenAndServe(":8081", )
 
 }
