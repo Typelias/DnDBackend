@@ -78,11 +78,16 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 
 	// fmt.Println(tokenString)
 
-	http.SetCookie(w, &http.Cookie{
-		Name:    "token",
-		Value:   tokenString,
-		Expires: experationTime,
-	})
+	cookie := &http.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		Expires:  experationTime,
+		SameSite: http.SameSiteNoneMode,
+	}
+
+	fmt.Println(cookie)
+
+	http.SetCookie(w, cookie)
 }
 
 func isAuthorized(endpoint func(http.ResponseWriter, *http.Request)) http.Handler {
@@ -387,12 +392,12 @@ func main() {
 
 	headers := handlers.AllowedHeaders([]string{"accept", "authorization", "content-type"})
 	methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
-	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.25.242.119:4200"})
+	origins := handlers.AllowedOrigins([]string{"http://localhost:4200", "http://172.25.240.76:4200"})
 	x := handlers.ExposedHeaders([]string{"Set-Cookie"})
 	cred := handlers.AllowCredentials()
 
 	fmt.Println("Server started")
 
-	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(headers, methods, origins, x, cred)(router)))
+	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(headers, methods, origins, x, cred)(router)))
 
 }
