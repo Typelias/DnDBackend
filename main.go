@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -78,11 +79,9 @@ func signIn(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println(tokenString)
 
 	cookie := &http.Cookie{
-		Name:     "token",
-		Value:    tokenString,
-		Expires:  experationTime,
-		SameSite: http.SameSiteNoneMode,
-		Secure:   true,
+		Name:    "token",
+		Value:   tokenString,
+		Expires: experationTime,
 	}
 
 	fmt.Println(cookie)
@@ -398,8 +397,8 @@ func main() {
 
 	fmt.Println("Server started")
 
-	http.ListenAndServeTLS(":8081", "./server.crt", "./server.key", handlers.CORS(headers, methods, origins, x, cred)(router))
+	//http.ListenAndServeTLS(":8081", "./server.crt", "./server.key", handlers.CORS(headers, methods, origins, x, cred)(router))
 
-	//log.Fatal(http.ListenAndServe(":8081", )
+	log.Fatal(http.ListenAndServe(":8081", handlers.CORS(headers, methods, origins, x, cred)(router)))
 
 }
