@@ -128,6 +128,7 @@ type CategoryItem struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Amount      int    `json:"amount"`
+	ShowAmount  bool   `json:"showAmount"`
 }
 
 //Category is a subclass of character
