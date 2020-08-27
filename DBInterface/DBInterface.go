@@ -168,7 +168,7 @@ type Spell struct {
 	Description   string `json:"description"`
 	Dice          string `json:"dice"`
 	DamageType    string `json:"damageType"`
-	SpellRange    int    `json:"spellRange"`
+	SpellRange    string `json:"spellRange"`
 	Component     string `json:"component"`
 	Duration      string `json:"duration"`
 	CastingTime   string `json:"castingTime"`
@@ -179,7 +179,7 @@ type Spell struct {
 
 //SpellList is a subclass of character
 type SpellList struct {
-	SpellList      []Spell `json:"cantrips"`
+	SpellList      []Spell `json:"spellList"`
 	Lvl1SpellSlots int     `json:"lvl1SpellSlots"`
 	Lvl2SpellSlots int     `json:"lvl2SpellSlots"`
 	Lvl3SpellSlots int     `json:"lvl3SpellSlots"`
