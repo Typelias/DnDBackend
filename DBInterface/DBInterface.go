@@ -174,32 +174,31 @@ type Spell struct {
 	CastingTime   string `json:"castingTime"`
 	Concentration bool   `json:"concentration"`
 	Conditions    string `json:"conditions"`
-}
-
-//Cantrips is a subclass of character
-type Cantrips struct {
-	SpellList []Spell `json:"spellList"`
-}
-
-//LevelSpells is a subclass of character
-type LevelSpells struct {
-	Spells            []Spell `json:"spells"`
-	SpellSlotTotal    int     `json:"spellSlotTotal"`
-	SpellSlotExpended int     `json:"spellSlotExpended"`
+	Level         string `json:"level"`
 }
 
 //SpellList is a subclass of character
 type SpellList struct {
-	Cantrips   Cantrips    `json:"cantrips"`
-	Lvl1Spells LevelSpells `json:"lvl1Spells"`
-	Lvl2Spells LevelSpells `json:"lvl2Spells"`
-	Lvl3Spells LevelSpells `json:"lvl3Spells"`
-	Lvl4Spells LevelSpells `json:"lvl4Spells"`
-	Lvl5Spells LevelSpells `json:"lvl5Spells"`
-	Lvl6Spells LevelSpells `json:"lvl6Spells"`
-	Lvl7Spells LevelSpells `json:"lvl7Spells"`
-	Lvl8Spells LevelSpells `json:"lvl8Spells"`
-	Lvl9Spells LevelSpells `json:"lvl9Spells"`
+	SpellList      []Spell `json:"cantrips"`
+	Lvl1SpellSlots int     `json:"lvl1SpellSlots"`
+	Lvl2SpellSlots int     `json:"lvl2SpellSlots"`
+	Lvl3SpellSlots int     `json:"lvl3SpellSlots"`
+	Lvl4SpellSlots int     `json:"lvl4SpellSlots"`
+	Lvl5SpellSlots int     `json:"lvl5SpellSlots"`
+	Lvl6SpellSlots int     `json:"lvl6SpellSlots"`
+	Lvl7SpellSlots int     `json:"lvl7SpellSlots"`
+	Lvl8SpellSlots int     `json:"lvl8SpellSlots"`
+	Lvl9SpellSlots int     `json:"lvl9SpellSlots"`
+
+	Lvl1SpellSlutsUsed int `json:"lvl1SpellSlutsUsed"`
+	Lvl2SpellSlutsUsed int `json:"lvl2SpellSlutsUsed"`
+	Lvl3SpellSlutsUsed int `json:"lvl3SpellSlutsUsed"`
+	Lvl4SpellSlutsUsed int `json:"lvl4SpellSlutsUsed"`
+	Lvl5SpellSlutsUsed int `json:"lvl5SpellSlutsUsed"`
+	Lvl6SpellSlutsUsed int `json:"lvl6SpellSlutsUsed"`
+	Lvl7SpellSlutsUsed int `json:"lvl7SpellSlutsUsed"`
+	Lvl8SpellSlutsUsed int `json:"lvl8SpellSlutsUsed"`
+	Lvl9SpellSlutsUsed int `json:"lvl9SpellSlutsUsed"`
 }
 
 //Character struct describes a DnD character
@@ -232,6 +231,7 @@ type Character struct {
 	SpellAttackBonus               int                            `json:"spellAttackBonus"`
 	SpellList                      SpellList                      `json:"spellList"`
 	ClassAttributes                []string                       `json:"classAttributes"`
+	DMComments                     string                         `json:"DMComments"`
 }
 
 //Campaign is used to handle operation on campain collection
