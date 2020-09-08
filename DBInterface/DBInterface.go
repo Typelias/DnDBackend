@@ -116,6 +116,7 @@ type Weapon struct {
 	DamageType  string `json:"damageType"`
 	Description string `json:"description"`
 	Condition   string `json:"condition"`
+	Amount      string `json:"amount"`
 }
 
 //AttacksAndSpellcasting is a subclass of character
